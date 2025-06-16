@@ -78,9 +78,6 @@ Kickstart Guide:
 
 If you experience any errors while trying to install kickstart, run `:checkhealth` for more info.
 
-I hope you enjoy your Neovim journey,
-- TJ
-
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
@@ -100,9 +97,6 @@ vim.g.have_nerd_font = true
 
 -- Make line numbers default
 vim.o.number = true
--- You can also add relative line numbers, to help with jumping.
---  Experiment for yourself to see if you like it!
--- vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
@@ -168,6 +162,10 @@ vim.o.confirm = true
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+--
+-- Change indentation with ctrl-< and ctrl->, these keymaps are caps insensitive
+vim.keymap.set('n', '<C-,>', 'V<')
+vim.keymap.set('n', '<C-.>', 'V>')
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -297,13 +295,13 @@ require('lazy').setup({
   },
   { -- Adds superfast motions with the s key
     'ggandor/leap.nvim',
+    event = 'VimEnter',
     opts = {},
     dependencies = { 'tpope/vim-repeat' },
-    config = function ()
+    config = function()
       require('leap').set_default_mappings()
     end,
   },
-
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -368,6 +366,7 @@ require('lazy').setup({
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>o', group = '[O]bsidian' },
       },
     },
   },
@@ -566,7 +565,7 @@ require('lazy').setup({
           if client.name == 'omnisharp' then
             map('grr', require('omnisharp_extended').telescope_lsp_references, '[G]oto [R]eferences')
           else
-          map('grr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+            map('grr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
           end
 
           -- Jump to the implementation of the word under your cursor.
@@ -584,7 +583,7 @@ require('lazy').setup({
           if client.name == 'omnisharp' then
             map('grd', require('omnisharp_extended').telescope_lsp_definition, '[G]oto [D]efinition')
           else
-          map('grd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+            map('grd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
           end
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
@@ -605,7 +604,7 @@ require('lazy').setup({
           if client.name == 'omnisharp' then
             map('grt', require('omnisharp_extended').telescope_lsp_type_definition, '[G]oto [T]ype Definition')
           else
-          map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
+            map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
           end
 
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
@@ -772,6 +771,8 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        nix = { 'nixfmt' },
+        markdown = { 'markdownlint' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -921,7 +922,7 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      -- require('mini.surround').setup()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
@@ -967,6 +968,155 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  {
+    'obsidian-nvim/obsidian.nvim',
+    version = '*', -- recommended, use latest release instead of latest commit
+    lazy = false,
+    event = 'VimEnter',
+    ft = 'markdown',
+    -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
+    -- event = {
+    --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
+    --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
+    --   -- refer to `:h file-pattern` for more examples
+    --   "BufReadPre path/to/my-vault/*.md",
+    --   "BufNewFile path/to/my-vault/*.md",
+    -- },
+    dependencies = {
+      -- Required.
+      'nvim-lua/plenary.nvim',
+      'nvim-treesitter/nvim-treesitter',
+    },
+
+    config = function()
+      require('obsidian').setup {
+        -- default = nil is necessary for the LSP to stop yelling at me
+
+        workspaces = {
+          {
+            name = 'obsidian-vault',
+            path = '/home/ken/Sync/obsidian-vault',
+          },
+        },
+
+        ---@param title string|?
+        ---@return string
+        note_id_func = function(title)
+          if not title then
+            return nil -- TODO: I think I should throw an error here
+          end
+          return title
+        end,
+
+        -- Optional, customize how note file names are generated given the ID, target directory, and title.
+        ---@param spec { id: string, dir: obsidian.Path, title: string|? }
+        ---@return string|obsidian.Path The full path to the new note.
+        note_path_func = function(spec)
+          print 'dookie'
+          if spec.title then
+            local path = spec.dir / tostring(spec.title)
+            return path:with_suffix '.md'
+          end
+          return nil -- TODO: I think I should throw an error or something here idk
+        end,
+
+        daily_notes = {
+          folder = 'Dailies',
+          date_format = '%d-%m-%Y',
+          template = nil, -- TODO:
+          default_tags = { 'Daily' },
+          workdays_only = false,
+          default = nil,
+        },
+
+        mappings = {
+          --This is left empty so that I can do mappings in the same way as I did with the LSP mappings above
+          default = nil,
+        },
+
+        templates = {
+          folder = 'templates',
+          date_format = '%d-%m-%Y',
+          default = nil,
+        },
+
+        open = {
+          use_advanced_uri = false,
+          -- TODO: make an issue on the github repo about how this was broken until I trimmed the single quotes that are added in obsidian.nvim/lua/obsidian/commands/open.lua
+          -- The specific culprit is vim.fn.shellescape(uri), I believe on line 30
+          func = function(path)
+            path = string.sub(path, 2, -2)
+            vim.ui.open(path)
+          end,
+        },
+
+        picker = {
+          name = 'telescope.nvim',
+
+          note_mappings = {
+            insert_link = '<C-h>',
+            default = nil,
+          },
+
+          tag_mappings = {
+            tag_note = '<C-t>',
+            insert_tag = '<C-h>',
+            default = nil,
+          },
+
+          default = nil,
+        },
+
+        -- Only use the file name, ignore the alias stuff
+        wiki_link_func = require('obsidian.util').wiki_link_path_only,
+
+        preferred_link_style = 'wiki', -- Rather than Markdown
+
+        completion = {
+          blink = true,
+          nvim_cmp = false,
+          min_chars = 1,
+          match_case = false,
+          default = nil,
+        },
+
+        ui = {
+          checkboxes = {
+            [' '] = { char = '󰄱', hl_group = 'ObsidianTodo' },
+            ['x'] = { char = '', hl_group = 'ObsidianDone' },
+          },
+        },
+      }
+
+      -- Setup the Obsidian keymaps here
+      local map = function(keys, func, desc, opts, mode)
+        mode = mode or 'n'
+
+        if not opts then
+          opts = {}
+        end
+
+        opts.desc = 'OBSIDIAN: ' .. desc
+
+        vim.keymap.set(mode, keys, func, opts)
+      end
+
+      map('<leader>oo', '<cmd>Obsidian open<CR>', '[O]pen in Obsidian')
+      map('<leader>os', '<cmd>Obsidian quick_switch<CR>', '[S]earch in my vault')
+      map('<leader>ob', '<cmd>Obsidian backlinks<CR>', 'Find [B]acklinks to this file')
+      map('<leader>og', '<cmd>Obsidian tags<CR>', 'Search ta[G]s')
+      map('<leader>ol', '<cmd>Obsidian links<CR>', 'Find [L]inks in this file')
+      map('<leader>ot', '<cmd>Obsidian template<CR>', 'Insert a [T]emplate')
+
+      -- TODO: make these only check / uncheck
+      -- TODO: make this command insert a checkbox if none is present
+      map('<leader>oc', '<cmd>Obsidian toggle_checkbox<CR>', 'Toggle the state of a [C]heckbox')
+
+      map('<leader>od', '<cmd>Obsidian today<CR>', "Open to[D]ay's note")
+      map('<leader>op', '<cmd>Obsidian dailies<CR>', '[P]ick a daily note')
+      map('<leader>of', '<cmd>Obsidian follow_link<CR>', 'Go to [F]ile under cursor')
+    end,
+  },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -982,7 +1132,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
