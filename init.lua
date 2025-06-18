@@ -707,7 +707,8 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       -- NOTE: I changed this, I removed Mason and have installed the language servers in my regular nix config
       local servers = {
-        eslint = {},
+        bashls = {},
+        eslint = {}, -- TODO: currently busted, see :LspInfo
         hls = {},
         omnisharp = {},
         pyright = {},
@@ -754,7 +755,7 @@ require('lazy').setup({
       },
     },
     opts = {
-      notify_on_error = false,
+      notify_on_error = true,
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
@@ -804,12 +805,13 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+              require('luasnip').filetype_extend('markdown', { 'tex' }) -- add LaTeX snippets to markdown for math notes
+            end,
+          },
         },
         opts = {},
       },
@@ -855,7 +857,7 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = { auto_show = true, auto_show_delay_ms = 500 },
       },
 
       sources = {
@@ -999,14 +1001,15 @@ require('lazy').setup({
           },
         },
 
-        ---@param title string|?
-        ---@return string
-        note_id_func = function(title)
-          if not title then
-            return nil -- TODO: I think I should throw an error here
-          end
-          return title
-        end,
+        -- I commented this out because I think having a unique ID is actually a good idea
+        -- ---@param title string|?
+        -- ---@return string
+        -- note_id_func = function(title)
+        --   if not title then
+        --     return nil -- TODO: I think I should throw an error here
+        --   end
+        --   return title
+        -- end,
 
         -- Optional, customize how note file names are generated given the ID, target directory, and title.
         ---@param spec { id: string, dir: obsidian.Path, title: string|? }
@@ -1082,8 +1085,8 @@ require('lazy').setup({
 
         ui = {
           checkboxes = {
-            [' '] = { char = '󰄱', hl_group = 'ObsidianTodo' },
-            ['x'] = { char = '', hl_group = 'ObsidianDone' },
+            [' '] = { char = '󰄱', hl_group = 'ObsidianTodo', order = 0 },
+            ['x'] = { char = '', hl_group = 'ObsidianDone', order = 1 },
           },
         },
       }
