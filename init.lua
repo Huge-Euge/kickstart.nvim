@@ -244,15 +244,8 @@ rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
-  -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
-  'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
 
-  -- NOTE: Plugins can also be added by using a table,
-  -- with the first argument being the link and the following
-  -- keys can be used to configure plugin behavior/loading/etc.
-  --
   -- Use `opts = {}` to automatically pass options to a plugin's `setup()` function, forcing the plugin to be loaded.
-  --
 
   -- Alternatively, use `config = function() ... end` for full control over the configuration.
   -- If you prefer to call `setup` explicitly, use:
@@ -281,6 +274,12 @@ require('lazy').setup({
       },
     },
   },
+
+  { -- Adds git related signs to the gutter, as well as utilities for managing changes
+    'NMAC427/guess-indent.nvim',
+    opts = {},
+  },
+
   { --Adds yazi integration into nvim, <F1> for help.
     'mikavilpas/yazi.nvim',
     opts = {},
@@ -495,6 +494,7 @@ require('lazy').setup({
       },
     },
   },
+
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -971,19 +971,12 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
   {
-    'obsidian-nvim/obsidian.nvim',
+    'obsidian.nvim',
     version = '*', -- recommended, use latest release instead of latest commit
     lazy = false,
+    dev = true,
     event = 'VimEnter',
     ft = 'markdown',
-    -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
-    -- event = {
-    --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-    --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
-    --   -- refer to `:h file-pattern` for more examples
-    --   "BufReadPre path/to/my-vault/*.md",
-    --   "BufNewFile path/to/my-vault/*.md",
-    -- },
     dependencies = {
       -- Required.
       'nvim-lua/plenary.nvim',
@@ -1001,23 +994,14 @@ require('lazy').setup({
           },
         },
 
-        -- I commented this out because I think having a unique ID is actually a good idea
-        -- ---@param title string|?
-        -- ---@return string
-        -- note_id_func = function(title)
-        --   if not title then
-        --     return nil -- TODO: I think I should throw an error here
-        --   end
-        --   return title
-        -- end,
-
         -- Optional, customize how note file names are generated given the ID, target directory, and title.
+        -- I prefer to just have the file names be the same as the titles, with capitalized kebab case ideally, not using the ID
         ---@param spec { id: string, dir: obsidian.Path, title: string|? }
         ---@return string|obsidian.Path The full path to the new note.
         note_path_func = function(spec)
-          print 'dookie'
           if spec.title then
-            local path = spec.dir / tostring(spec.title)
+            local title = string.gsub(spec.title, '%s+', '-')
+            local path = spec.dir / tostring(title)
             return path:with_suffix '.md'
           end
           return nil -- TODO: I think I should throw an error or something here idk
@@ -1032,25 +1016,10 @@ require('lazy').setup({
           default = nil,
         },
 
-        mappings = {
-          --This is left empty so that I can do mappings in the same way as I did with the LSP mappings above
-          default = nil,
-        },
-
         templates = {
           folder = 'templates',
           date_format = '%d-%m-%Y',
           default = nil,
-        },
-
-        open = {
-          use_advanced_uri = false,
-          -- TODO: make an issue on the github repo about how this was broken until I trimmed the single quotes that are added in obsidian.nvim/lua/obsidian/commands/open.lua
-          -- The specific culprit is vim.fn.shellescape(uri), I believe on line 30
-          func = function(path)
-            path = string.sub(path, 2, -2)
-            vim.ui.open(path)
-          end,
         },
 
         picker = {
@@ -1083,11 +1052,9 @@ require('lazy').setup({
           default = nil,
         },
 
-        ui = {
-          checkboxes = {
-            [' '] = { char = '󰄱', hl_group = 'ObsidianTodo', order = 0 },
-            ['x'] = { char = '', hl_group = 'ObsidianDone', order = 1 },
-          },
+        checkbox = {
+          order = { ' ', 'x', '~' },
+          create_on_empty = true,
         },
       }
 
@@ -1104,20 +1071,16 @@ require('lazy').setup({
         vim.keymap.set(mode, keys, func, opts)
       end
 
-      map('<leader>oo', '<cmd>Obsidian open<CR>', '[O]pen in Obsidian')
-      map('<leader>os', '<cmd>Obsidian quick_switch<CR>', '[S]earch in my vault')
       map('<leader>ob', '<cmd>Obsidian backlinks<CR>', 'Find [B]acklinks to this file')
+      map('<leader>oc', '<cmd>Obsidian toggle_checkbox<CR>', 'Toggle the state of a [C]heckbox')
+      map('<leader>od', '<cmd>Obsidian today<CR>', "Open to[D]ay's note")
+      map('<leader>of', '<cmd>Obsidian follow_link<CR>', 'Go to [F]ile under cursor')
       map('<leader>og', '<cmd>Obsidian tags<CR>', 'Search ta[G]s')
       map('<leader>ol', '<cmd>Obsidian links<CR>', 'Find [L]inks in this file')
-      map('<leader>ot', '<cmd>Obsidian template<CR>', 'Insert a [T]emplate')
-
-      -- TODO: make these only check / uncheck
-      -- TODO: make this command insert a checkbox if none is present
-      map('<leader>oc', '<cmd>Obsidian toggle_checkbox<CR>', 'Toggle the state of a [C]heckbox')
-
-      map('<leader>od', '<cmd>Obsidian today<CR>', "Open to[D]ay's note")
+      map('<leader>oo', '<cmd>Obsidian open<CR>', '[O]pen in Obsidian')
       map('<leader>op', '<cmd>Obsidian dailies<CR>', '[P]ick a daily note')
-      map('<leader>of', '<cmd>Obsidian follow_link<CR>', 'Go to [F]ile under cursor')
+      map('<leader>os', '<cmd>Obsidian quick_switch<CR>', '[S]earch in my vault')
+      map('<leader>ot', '<cmd>Obsidian template<CR>', 'Insert a [T]emplate')
     end,
   },
 
@@ -1131,10 +1094,8 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
@@ -1166,6 +1127,9 @@ require('lazy').setup({
       task = '📌',
       lazy = '💤 ',
     },
+  },
+  dev = {
+    path = '~/Development',
   },
 })
 
