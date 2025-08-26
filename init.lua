@@ -712,6 +712,10 @@ require('lazy').setup({
         hls = {},
         omnisharp = {},
         pyright = {},
+
+        -- NOTE: the server is not currently on nixpkgs, I have to install it with raco
+        -- raco pkg install racket-langserver
+        racket_langserver = {},
         ts_ls = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -774,6 +778,7 @@ require('lazy').setup({
         lua = { 'stylua' },
         nix = { 'nixfmt' },
         markdown = { 'markdownlint' },
+
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -993,6 +998,8 @@ require('lazy').setup({
             path = '/home/ken/Sync/obsidian-vault',
           },
         },
+
+        legacy_commands = false,
 
         -- Optional, customize how note file names are generated given the ID, target directory, and title.
         -- I prefer to just have the file names be the same as the titles, with capitalized kebab case ideally, not using the ID
