@@ -976,6 +976,23 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
   {
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    lazy = false,
+    event = 'VimEnter',
+    config = function()
+      require('toggleterm').setup {
+        start_in_insert = false,
+        float_opts = {
+          border = 'curved',
+        },
+      }
+      vim.keymap.set('n', '<leader>j', function()
+        require('toggleterm').toggle(1, nil, nil, 'float')
+      end, { desc = 'ToggleTerm: toggle' })
+    end,
+  },
+  {
     'obsidian.nvim',
     version = '*', -- recommended, use latest release instead of latest commit
     lazy = false,
