@@ -1010,6 +1010,10 @@ require('lazy').setup({
             local title = string.gsub(spec.title, '%s+', '-')
             local path = spec.dir / tostring(title)
             return path:with_suffix '.md'
+          elseif spec.id then
+            -- This catches daily notes, which don't have a title, just an id
+            local path = spec.dir / tostring(spec.id)
+            return path:with_suffix '.md'
           end
           return nil -- TODO: I think I should throw an error or something here idk
         end,
@@ -1017,10 +1021,9 @@ require('lazy').setup({
         daily_notes = {
           folder = 'Dailies',
           date_format = '%d-%m-%Y',
-          template = nil, -- TODO:
+          template = 'Daily_Todo.md',
           default_tags = { 'Daily' },
           workdays_only = false,
-          default = nil,
         },
 
         templates = {
