@@ -708,6 +708,7 @@ require('lazy').setup({
       -- NOTE: I changed this, I removed Mason and have installed the language servers in my regular nix config
       local servers = {
         bashls = {},
+        clangd = {},
         eslint = {}, -- TODO: currently busted, see :LspInfo
         hls = {},
         omnisharp = {},
@@ -715,6 +716,8 @@ require('lazy').setup({
 
         -- NOTE: the server is not currently on nixpkgs, I have to install it with raco
         -- raco pkg install racket-langserver
+        -- AND this installs the sicp library
+        -- raco pkg install sicp
         racket_langserver = {},
         ts_ls = {},
         -- rust_analyzer = {},
