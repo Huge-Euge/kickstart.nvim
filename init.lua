@@ -217,6 +217,25 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
+-- [[ Enabling Spellchecking for certain filetypes ]]
+
+local spellcheck_filetypes = { 'text', 'gitcommit', 'markdown' }
+
+vim.opt.spell = false
+
+vim.api.nvim_create_augroup('Spellcheck', { clear = true })
+
+-- This autocommand executes when we load a markdown file
+vim.api.nvim_create_autocmd('FileType', {
+  group = 'Spellcheck',
+  pattern = spellcheck_filetypes,
+  callback = function()
+    vim.opt_local.spell = true
+    vim.opt_local.spelllang = 'en_ca' -- spellcheck against Canadian dict
+  end,
+  desc = 'Enable spellcheck for the defined filetypes',
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -997,10 +1016,12 @@ require('lazy').setup({
     end,
   },
   {
-    'obsidian.nvim',
+    'obsidian-nvim/obsidian.nvim',
+    -- The below two lines are for local development
+    -- 'obsidian.nvim',
+    -- dev = true,
     version = '*', -- recommended, use latest release instead of latest commit
     lazy = false,
-    dev = true,
     event = 'VimEnter',
     ft = 'markdown',
     dependencies = {
@@ -1085,9 +1106,12 @@ require('lazy').setup({
 
         checkbox = {
           order = { ' ', 'x', '~' },
-          create_on_empty = true,
+          -- create_on_empty = true,
         },
       }
+
+      -- Allow some characters to turn into icons or disappear - checkboxes, link brackets
+      vim.opt_local.conceallevel = 2
 
       -- Setup the Obsidian keymaps here
       local map = function(keys, func, desc, opts, mode)
@@ -1102,8 +1126,12 @@ require('lazy').setup({
         vim.keymap.set(mode, keys, func, opts)
       end
 
+      local my_toggle_checkbox = function()
+        require('obsidian').api.toggle_checkbox(Obsidian.opts.checkbox.order, nil, { create_on_empty = true })
+      end
+
       map('<leader>ob', '<cmd>Obsidian backlinks<CR>', 'Find [B]acklinks to this file')
-      map('<leader>oc', '<cmd>Obsidian toggle_checkbox<CR>', 'Toggle the state of a [C]heckbox')
+      map('<leader>oc', my_toggle_checkbox, 'Toggle the state of a [C]heckbox')
       map('<leader>od', '<cmd>Obsidian today<CR>', "Open to[D]ay's note")
       map('<leader>of', '<cmd>Obsidian follow_link<CR>', 'Go to [F]ile under cursor')
       map('<leader>og', '<cmd>Obsidian tags<CR>', 'Search ta[G]s')
