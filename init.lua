@@ -236,6 +236,41 @@ vim.api.nvim_create_autocmd('FileType', {
   desc = 'Enable spellcheck for the defined filetypes',
 })
 
+-- Secret Handling in my neovim sessions
+local secret_cache = {}
+
+--- Fetches a secret from the Freedesktop Secret Service (KeePassXC)
+--- @param attribute_name string: The attribute name
+--- @param attribute_value string: The attribute value
+--- @return string|nil: The secret, or nil if not found
+local function get_secret_service(attribute_name, attribute_value)
+  local cache_key = attribute_name .. ':' .. attribute_value
+
+  -- 1. Check the cache first
+  if secret_cache[cache_key] then
+    return secret_cache[cache_key]
+  end
+
+  -- 2. Build the command
+  local cmd = { 'secret-tool', 'lookup', attribute_name, attribute_value }
+
+  -- 3. Run the command
+  local secret = vim.fn.system(cmd)
+
+  -- 4. Check for errors
+  if vim.v.shell_error ~= 0 then
+    vim.notify("Secret Service Error: Could not fetch '" .. attribute_value .. "'. Is KeePassXC unlocked?", vim.log.levels.ERROR)
+    return nil
+  end
+
+  -- 5. Clean, cache, and return
+  local trimmed_secret = secret:gsub('%s*$', '') -- Remove trailing newline
+  secret_cache[cache_key] = trimmed_secret
+  return trimmed_secret
+end
+
+get_secret_service('gemini-api-key-21-10-2025', 'key')
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
@@ -1192,6 +1227,52 @@ require('lazy').setup({
 
       map('<leader>cc', myToggle, 'Toggle [C]opilot chat')
       map('<leader>cb', cpf.ask, 'Toggle [C]opilot chat') -- TODO: add the current buffer to the prompt
+      map('<leader>cb', cpf.ask, 'Toggle [C]opilot chat') -- TODO: add What is selected in visual mode to the prompt
+
+      -- Set it up to use Gemini
+      require('CopilotChat.config').providers.gemini = {
+        prepare_input = require('CopilotChat.config.providers').copilot.prepare_input,
+        prepare_output = require('CopilotChat.config.providers').copilot.prepare_output,
+
+        get_headers = function()
+          local api_key = get_secret_service('gemini-api-key-21-10-2025', 'key')
+
+          assert(api_key, 'Could not fetch gemini api key from secret service / keepassxc')
+
+          return {
+            Authorization = 'Bearer ' .. api_key,
+            ['Content-Type'] = 'application/json',
+          }
+        end,
+
+        get_models = function(headers)
+          local response, err = require('CopilotChat.utils').curl_get('https://generativelanguage.googleapis.com/v1beta/openai/models', {
+            headers = headers,
+            json_response = true,
+          })
+
+          if err then
+            error(err)
+          end
+
+          print(response)
+          print(response.body.data)
+
+          return vim.tbl_map(function(model)
+            local id = model.id:gsub('^models/', '')
+            return {
+              id = id,
+              name = id,
+              streaming = true,
+              tools = true,
+            }
+          end, response.body.data)
+        end,
+
+        get_url = function()
+          return 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+        end,
+      }
     end,
   },
 
