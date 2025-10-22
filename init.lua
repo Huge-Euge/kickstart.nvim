@@ -837,6 +837,8 @@ require('lazy').setup({
         nix = { 'nixfmt' },
         markdown = { 'markdownlint' },
         python = { 'black' },
+        html = { 'djlint' },
+        htmldjango = { 'djlint' },
 
         -- Conform can also run multiple formatters sequentially
         --
