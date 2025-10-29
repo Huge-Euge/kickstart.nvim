@@ -225,7 +225,6 @@ vim.opt.spell = false
 
 vim.api.nvim_create_augroup('Spellcheck', { clear = true })
 
--- This autocommand executes when we load a markdown file
 vim.api.nvim_create_autocmd('FileType', {
   group = 'Spellcheck',
   pattern = spellcheck_filetypes,
@@ -234,6 +233,28 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt_local.spelllang = 'en_ca' -- spellcheck against Canadian dict
   end,
   desc = 'Enable spellcheck for the defined filetypes',
+})
+
+-- [[ Enabling text formatting for certain filetypes ]]
+
+local format_filetypes = { 'text', 'gitcommit', 'markdown' }
+
+vim.api.nvim_create_augroup('Format', { clear = true })
+
+vim.api.nvim_create_autocmd('FileType', {
+  group = 'Format',
+  pattern = format_filetypes,
+  callback = function()
+    vim.opt_local.textwidth = 80
+
+    -- 't' = auto-wrap text using textwidth
+    -- 'c' = auto-wrap comments
+    -- 'r' = continue comments on <Enter>
+    -- 'q' = allow formatting with 'gq'
+    -- 'n' = recognize numbered lists
+    vim.opt_local.formatoptions:append 'tcrqn'
+  end,
+  desc = 'Enable text formatting, particularly linewrapping, for the define filetypes',
 })
 
 -- Secret Handling in my neovim sessions
@@ -835,7 +856,7 @@ require('lazy').setup({
         cpp = { 'clang-format' },
         lua = { 'stylua' },
         nix = { 'nixfmt' },
-        markdown = { 'markdownlint' },
+        markdown = { 'md_prettierd' },
         python = { 'black' },
         html = { 'djlint' },
         htmldjango = { 'djlint' },
@@ -844,6 +865,23 @@ require('lazy').setup({
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
+      },
+
+      formatters = {
+        -- We can setup aliases for formatters with particular args here
+        md_prettierd = {
+          -- This is my custom setup for running prettierd on md files
+          command = 'prettierd',
+          args = {
+            '--parser=markdown',
+            '--print-width=80',
+            '--prose-wrap=always',
+            '--tab-width=4',
+            '--no-single-quote',
+            '--std-from-filename',
+            '$FILENAME',
+          },
+        },
       },
     },
   },
