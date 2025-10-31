@@ -784,8 +784,9 @@ require('lazy').setup({
       local servers = {
         bashls = {},
         clangd = {},
-        eslint = {}, -- TODO: currently busted, see :LspInfo
+        -- eslint = {}, -- TODO: currently busted, see :LspInfo
         hls = {},
+        nil_ls = {}, -- lsp for nix
         omnisharp = {},
         pyright = {},
 
