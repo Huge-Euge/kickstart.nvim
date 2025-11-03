@@ -844,7 +844,9 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        -- local disable_filetypes = { c = true, cpp = true }
+        -- NOTE: I removed this for personal use because I wanted format-on-save, but in a professional environment this is worth reconsidering
+        local disable_filetypes = {}
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -855,7 +857,7 @@ require('lazy').setup({
         end
       end,
       formatters_by_ft = {
-        cpp = { 'clang-format' },
+        cpp = { 'clangtidy_fix', 'ken_clang_format' },
         lua = { 'stylua' },
         nix = { 'nixfmt' },
         markdown = { 'md_prettierd' },
@@ -883,6 +885,26 @@ require('lazy').setup({
             '--std-from-filename',
             '$FILENAME',
           },
+        },
+        -- TODO: this is working on rhino, but not rat for some reason
+        clangtidy_fix = {
+          command = 'clang-tidy',
+          args = {
+            '-fix',
+            '--quiet',
+            '$FILENAME',
+          },
+          -- Only run if vim can find a .clang-tidy file in the project directory
+          condition = function(ctx)
+            return vim.fs.find({ '.clang-tidy' }, { upward = true, path = ctx.dirname })
+          end,
+        },
+        ken_clang_format = {
+          command = 'clang-format',
+          args = { '$FILENAME' },
+          condition = function(ctx)
+            return vim.fs.find({ '.clang-format' }, { upward = true, path = ctx.dirname })
+          end,
         },
       },
     },
