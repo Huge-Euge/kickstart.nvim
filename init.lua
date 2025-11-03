@@ -780,22 +780,22 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-      -- NOTE: I changed this, I removed Mason and have installed the language servers in my regular nix config
+      -- NOTE: I changed this, I removed Mason and have installed the language servers in my regular nix config / nix shells
       local servers = {
-        bashls = {},
-        clangd = {},
+        bashls = {}, -- bash
+        clangd = {}, -- C++ and C
         -- eslint = {}, -- TODO: currently busted, see :LspInfo
-        hls = {},
+        hls = {}, -- haskell
         nil_ls = {}, -- lsp for nix
-        omnisharp = {},
-        pyright = {},
+        omnisharp = {}, -- C#
+        pyright = {}, -- Python
 
         -- NOTE: the server is not currently on nixpkgs, I have to install it with raco
         -- raco pkg install racket-langserver
         -- AND this installs the sicp library
         -- raco pkg install sicp
         racket_langserver = {},
-        ts_ls = {},
+        ts_ls = {}, -- TypeScript
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
 
@@ -809,16 +809,17 @@ require('lazy').setup({
                 callSnippet = 'Replace',
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
+              diagnostics = { disable = { 'missing-fields' } },
             },
           },
         },
       }
 
       for key, value in pairs(servers) do
-        -- TODO: handle the config for each server
+        -- set the config for the LS here
+        vim.lsp.config[key] = value
+        -- enable the LS here
         vim.lsp.enable(key)
-        -- require('lspconfig')[key].setup()
       end
     end,
   },
@@ -877,7 +878,7 @@ require('lazy').setup({
             '--parser=markdown',
             '--print-width=80',
             '--prose-wrap=always',
-            '--tab-width=4',
+            '--tab-width=2',
             '--no-single-quote',
             '--std-from-filename',
             '$FILENAME',
