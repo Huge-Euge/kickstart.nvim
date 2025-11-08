@@ -353,6 +353,9 @@ require('lazy').setup({
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'NMAC427/guess-indent.nvim',
     opts = {},
+    config = function()
+      require('guess-indent').setup {}
+    end,
   },
 
   { --Adds yazi integration into nvim, <F1> for help.
