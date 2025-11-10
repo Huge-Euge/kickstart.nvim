@@ -786,7 +786,9 @@ require('lazy').setup({
       -- NOTE: I changed this, I removed Mason and have installed the language servers in my regular nix config / nix shells
       local servers = {
         bashls = {}, -- bash
-        clangd = {}, -- C++ and C
+        clangd = {
+          cmd = { 'clangd', '--clang-tidy', '--background-index' },
+        }, -- C++ and C
         -- eslint = {}, -- TODO: currently busted, see :LspInfo
         hls = {}, -- haskell
         nil_ls = {}, -- lsp for nix
@@ -847,9 +849,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        -- local disable_filetypes = { c = true, cpp = true }
-        -- NOTE: I removed this for personal use because I wanted format-on-save, but in a professional environment this is worth reconsidering
-        local disable_filetypes = {}
+        local disable_filetypes = { c = true, cpp = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -860,7 +860,7 @@ require('lazy').setup({
         end
       end,
       formatters_by_ft = {
-        cpp = { 'clangtidy_fix', 'ken_clang_format' },
+        cpp = { 'ken_clang_format' },
         lua = { 'stylua' },
         nix = { 'nixfmt' },
         markdown = { 'md_prettierd' },
@@ -888,19 +888,6 @@ require('lazy').setup({
             '--std-from-filename',
             '$FILENAME',
           },
-        },
-        -- TODO: this is working on rhino, but not rat for some reason
-        clangtidy_fix = {
-          command = 'clang-tidy',
-          args = {
-            '-fix',
-            '--quiet',
-            '$FILENAME',
-          },
-          -- Only run if vim can find a .clang-tidy file in the project directory
-          condition = function(ctx)
-            return vim.fs.find({ '.clang-tidy' }, { upward = true, path = ctx.dirname })
-          end,
         },
         ken_clang_format = {
           command = 'clang-format',
