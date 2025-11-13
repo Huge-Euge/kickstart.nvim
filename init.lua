@@ -235,7 +235,7 @@ vim.api.nvim_create_autocmd('FileType', {
   desc = 'Enable spellcheck for the defined filetypes',
 })
 
--- [[ Enabling text formatting for certain filetypes ]]
+-- [[ Enabling nvim linewrapping and basic text formatting for certain filetypes ]]
 
 local format_filetypes = { 'text', 'gitcommit', 'markdown' }
 
@@ -1168,7 +1168,6 @@ require('lazy').setup({
 
           note_mappings = {
             insert_link = '<C-h>',
-            default = nil,
           },
 
           tag_mappings = {
