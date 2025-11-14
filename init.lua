@@ -237,25 +237,25 @@ vim.api.nvim_create_autocmd('FileType', {
 
 -- [[ Enabling nvim linewrapping and basic text formatting for certain filetypes ]]
 
-local format_filetypes = { 'text', 'gitcommit', 'markdown' }
-
-vim.api.nvim_create_augroup('Format', { clear = true })
-
-vim.api.nvim_create_autocmd('FileType', {
-  group = 'Format',
-  pattern = format_filetypes,
-  callback = function()
-    vim.opt_local.textwidth = 80
-
-    -- 't' = auto-wrap text using textwidth
-    -- 'c' = auto-wrap comments
-    -- 'r' = continue comments on <Enter>
-    -- 'q' = allow formatting with 'gq'
-    -- 'n' = recognize numbered lists
-    vim.opt_local.formatoptions:append 'tcrqn'
-  end,
-  desc = 'Enable text formatting, particularly linewrapping, for the define filetypes',
-})
+-- local format_filetypes = { 'text', 'gitcommit', 'markdown' }
+--
+-- vim.api.nvim_create_augroup('Format', { clear = true })
+--
+-- vim.api.nvim_create_autocmd('FileType', {
+--   group = 'Format',
+--   pattern = format_filetypes,
+--   callback = function()
+--     vim.opt_local.textwidth = 80
+--
+--     -- 't' = auto-wrap text using textwidth
+--     -- 'c' = auto-wrap comments
+--     -- 'r' = continue comments on <Enter>
+--     -- 'q' = allow formatting with 'gq'
+--     -- 'n' = recognize numbered lists
+--     vim.opt_local.formatoptions:append 'tcrqn'
+--   end,
+--   desc = 'Enable text formatting, particularly linewrapping, for the define filetypes',
+-- })
 
 -- Secret Handling in my neovim sessions
 local secret_cache = {}
@@ -881,8 +881,8 @@ require('lazy').setup({
           command = 'prettierd',
           args = {
             '--parser=markdown',
-            '--print-width=80',
-            '--prose-wrap=always',
+            -- '--print-width=80',
+            -- '--prose-wrap=always',
             '--tab-width=2',
             '--no-single-quote',
             '--std-from-filename',
