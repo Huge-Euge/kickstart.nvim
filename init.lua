@@ -237,6 +237,11 @@ vim.api.nvim_create_autocmd('FileType', {
   desc = 'Enable spellcheck for the defined filetypes',
 })
 
+-- [[ Setting up my pandoc markdown->pdf workflow ]]
+
+local pdf_workflow = require 'custom.pandoc_workflow'
+vim.keymap.set('n', '<leader>om', pdf_workflow.run_pandoc, { desc = 'Run [M]y pandoc script on the current markdown file' })
+
 -- [[ Enabling nvim linewrapping and basic text formatting for certain filetypes ]]
 
 -- local format_filetypes = { 'text', 'gitcommit', 'markdown' }
@@ -378,7 +383,9 @@ require('lazy').setup({
     opts = {},
     dependencies = { 'tpope/vim-repeat' },
     config = function()
-      require('leap').set_default_mappings()
+      vim.keymap.set({ 'n', 'x', 'o' }, 's', '<Plug>(leap)', { desc = 'leap' })
+      vim.keymap.set({ 'n' }, '<leader>S', '<Plug>(leap-from-window)', { desc = 'Leap to another window' })
+      -- require('leap').set_default_mappings()
     end,
   },
 
@@ -935,6 +942,7 @@ require('lazy').setup({
         opts = {},
       },
       'folke/lazydev.nvim',
+      { 'jmbuhr/cmp-pandoc-references', dev = false, ft = { 'markdown' } }, -- Complete pandoc citation keys retrieved from a .bib file specified in the YAML header of a markdown file
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
@@ -980,9 +988,15 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'references' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          references = {
+            module = 'cmp-pandoc-references.blink',
+            name = 'pandoc_references',
+            score_offset = 2,
+            opts = { bib_relative_to_file = true },
+          },
         },
       },
 
@@ -1043,7 +1057,15 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      -- require('mini.surround').setup()
+      require('mini.surround').setup {
+        mappings = {
+          add = 'Sa',
+          delete = 'dS',
+          replace = 'cS',
+          update = 'yS',
+          prefix = 'S',
+        },
+      }
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
