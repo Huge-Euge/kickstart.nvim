@@ -16,8 +16,15 @@ end
 local function run_pandoc_and_update()
   -- 1. Get the current file name and the bibliography file name (assuming it's hardcoded or known)
   local input_file = vim.fn.expand '%:p' -- Full path to the current Markdown file
+  local file_dir = vim.fn.expand '%:p:h' -- Directory of the md file
+  local file_name = vim.fn.expand '%:t' -- Just the filename
   local pdf_output_file = vim.fn.fnamemodify(input_file, ':r') .. '.pdf'
   local current_buf = vim.api.nvim_get_current_buf()
+
+  if vim.fn.executable(PANDOC_SCRIPT) == 0 then
+    print 'Error: Pandoc script not found in PATH.'
+    return
+  end
 
   -- 2. Construct the full shell command
   local shell_command = string.format('%s %s', PANDOC_SCRIPT, vim.fn.shellescape(input_file))
@@ -27,19 +34,33 @@ local function run_pandoc_and_update()
 
   print 'Running Pandoc conversion...'
 
+  local log_file = vim.fn.tempname()
+
+  -- Create the shell command string
+  -- 1st: cd into file_dir, && if that worked,
+  -- 2nd: PANDOC_SCRIPT on file_name
+  local shell_command = string.format('(cd %s && %s %s) > %s 2>&1', vim.fn.shellescape(file_dir), PANDOC_SCRIPT, vim.fn.shellescape(file_name), log_file)
+
   -- 3. Execute the script asynchronously
   -- Use jobstart for non-blocking execution
   vim.fn.jobstart(shell_command, {
     on_exit = function(jid, code)
+      vim.cmd 'echo ""'
+      vim.cmd 'redraw!'
+
       if code == 0 then
-        -- 4. If conversion succeeded, update the preview
         print '✅ Conversion complete. Updating preview...'
         open_pdf_viewer(pdf_output_file)
       else
         print '❌ Conversion failed! Check script and LaTeX output.'
+        -- Read and print the error log
+        local errors = vim.fn.readfile(log_file)
+        for _, line in ipairs(errors) do
+          print(line)
+        end
       end
+      vim.fn.delete(log_file)
     end,
-    -- Optional: redirect stdout/stderr to a temporary file for debugging
     stdout = false,
     stderr = false,
   })
