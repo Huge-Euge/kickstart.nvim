@@ -1175,7 +1175,7 @@ require('lazy').setup({
 
         daily_notes = {
           folder = 'Dailies',
-          date_format = '%d-%m-%Y',
+          date_format = '%Y-%m-%d',
           template = 'Daily_Todo.md',
           default_tags = { 'daily' },
           workdays_only = false,
