@@ -233,8 +233,11 @@ vim.api.nvim_create_autocmd('FileType', {
   callback = function()
     vim.opt_local.spell = true
     vim.opt_local.spelllang = 'en_ca' -- spellcheck against Canadian dict
+    vim.opt_local.wrap = true
+    vim.opt_local.linebreak = true
+    vim.opt_local.breakindent = true
   end,
-  desc = 'Enable spellcheck for the defined filetypes',
+  desc = 'Enable spellcheck and clean linewrapping for the defined filetypes',
 })
 
 -- [[ Setting up my pandoc markdown->pdf workflow ]]
@@ -798,7 +801,7 @@ require('lazy').setup({
         clangd = {
           cmd = { 'clangd', '--clang-tidy', '--background-index' },
         }, -- C++ and C
-        -- eslint = {}, -- TODO: currently busted, see :LspInfo
+        ts_ls = {}, -- For ts/js
         hls = {}, -- haskell
         nil_ls = {}, -- lsp for nix
         omnisharp = {}, -- C#
@@ -809,7 +812,6 @@ require('lazy').setup({
         -- AND this installs the sicp library
         -- raco pkg install sicp
         racket_langserver = {},
-        ts_ls = {}, -- TypeScript
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
 
@@ -880,7 +882,7 @@ require('lazy').setup({
         -- Conform can also run multiple formatters sequentially
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
       },
 
       formatters = {
