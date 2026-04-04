@@ -1418,3 +1418,12 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- [[ Configure Colourised Rendering for .md Files ]]
+-- NOTE: Should agree with my obsidian css snippets for maximum readability
+
+vim.api.nvim_set_hl(0, '@markup.strong', { fg = 'cyan', bold = true })
+vim.api.nvim_set_hl(0, 'markdownBold', { fg = 'cyan', bold = true })
+
+vim.api.nvim_set_hl(0, '@markup.italic', { fg = 'gold', italic = true })
+vim.api.nvim_set_hl(0, 'markdownItalic', { fg = 'gold', italic = true })
