@@ -199,11 +199,15 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 -- [[ Custom Keymaps ]]
 --
--- Make j and k move through visual lines, rather than literal lines
+-- Make j and k move through visual lines, rather than logical lines
 vim.keymap.set('n', 'j', 'gj', { desc = 'Move down through a visual line' })
 vim.keymap.set('n', 'k', 'gk', { desc = 'Move up through a visual line' })
 vim.keymap.set('n', 'gj', 'j', { desc = 'Move down through a physical line' })
 vim.keymap.set('n', 'gk', 'k', { desc = 'Move up through a physical line' })
+
+-- Remove S for "Substitute whole line"
+vim.keymap.set('n', 'S', '<Nop>')
+vim.keymap.set('v', 'S', '<Nop>')
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -244,6 +248,15 @@ vim.api.nvim_create_autocmd('FileType', {
 
 local pdf_workflow = require 'custom.pandoc_workflow'
 vim.keymap.set('n', '<leader>om', pdf_workflow.run_pandoc, { desc = 'Run [M]y pandoc script on the current markdown file' })
+
+-- [[ Configure Colourised Rendering for markdown Files ]]
+-- NOTE: Should agree with my obsidian css snippets for maximum readability
+
+vim.api.nvim_set_hl(0, '@markup.strong', { fg = 'cyan', bold = true })
+vim.api.nvim_set_hl(0, 'markdownBold', { fg = 'cyan', bold = true })
+
+vim.api.nvim_set_hl(0, '@markup.italic', { fg = 'gold', italic = true })
+vim.api.nvim_set_hl(0, 'markdownItalic', { fg = 'gold', italic = true })
 
 -- [[ Enabling nvim linewrapping and basic text formatting for certain filetypes ]]
 
@@ -381,7 +394,7 @@ require('lazy').setup({
     },
   },
   { -- Adds superfast motions with the s key
-    'ggandor/leap.nvim',
+    url = 'https://codeberg.org/andyg/leap.nvim',
     event = 'VimEnter',
     opts = {},
     dependencies = { 'tpope/vim-repeat' },
@@ -807,9 +820,9 @@ require('lazy').setup({
         omnisharp = {}, -- C#
         pyright = {}, -- Python
 
-        -- NOTE: the server is not currently on nixpkgs, I have to install it with raco
+        -- NOTE: racket_langserver is not currently on nixpkgs, I have to install it with raco
         -- raco pkg install racket-langserver
-        -- AND this installs the sicp library
+        -- and this installs the sicp library
         -- raco pkg install sicp
         racket_langserver = {},
         -- rust_analyzer = {},
@@ -892,7 +905,7 @@ require('lazy').setup({
           command = 'prettierd',
           args = {
             '--parser=markdown',
-            -- '--print-width=80',
+            -- '--print-width=80', -- limit line length to 80 chars
             -- '--prose-wrap=always',
             '--tab-width=2',
             '--no-single-quote',
