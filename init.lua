@@ -360,6 +360,7 @@ require('lazy').setup({
   -- options to `gitsigns.nvim`.
   --
   -- See `:help gitsigns` to understand what the configuration keys do
+
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
@@ -393,6 +394,7 @@ require('lazy').setup({
       },
     },
   },
+
   { -- Adds superfast motions with the s key
     url = 'https://codeberg.org/andyg/leap.nvim',
     event = 'VimEnter',
@@ -716,11 +718,7 @@ require('lazy').setup({
           ---@param bufnr? integer some lsp support methods only in specific files
           ---@return boolean
           local function client_supports_method(client, method, bufnr)
-            if vim.fn.has 'nvim-0.11' == 1 then
-              return client:supports_method(method, bufnr)
-            else
-              return client.supports_method(method, { bufnr = bufnr })
-            end
+            return client:supports_method(method, bufnr)
           end
 
           -- The following two autocommands are used to highlight references of the
@@ -1156,6 +1154,7 @@ require('lazy').setup({
       -- Required.
       'nvim-lua/plenary.nvim',
       'nvim-treesitter/nvim-treesitter',
+      'nvim-telescope/telescope.nvim',
     },
 
     config = function()
@@ -1174,7 +1173,7 @@ require('lazy').setup({
         -- Optional, customize how note file names are generated given the ID, target directory, and title.
         -- I prefer to just have the file names be the same as the titles, with capitalized kebab case ideally, not using the ID
         ---@param spec { id: string, dir: obsidian.Path, title: string|? }
-        ---@return string|obsidian.Path The full path to the new note.
+        ---@return string|obsidian.Path -- The full path to the new note.
         note_path_func = function(spec)
           if spec.title then
             local title = string.gsub(spec.title, '%s+', '-')
@@ -1221,12 +1220,12 @@ require('lazy').setup({
         -- Only use the file name, ignore the alias stuff
         wiki_link_func = require('obsidian.util').wiki_link_path_only,
 
-        preferred_link_style = 'wiki', -- Rather than Markdown
+        link = {
+          style = 'wiki',
+        }, -- Rather than Markdown
 
         completion = {
-          blink = true,
-          nvim_cmp = false,
-          min_chars = 1,
+          min_chars = 2,
           match_case = false,
           default = nil,
         },
@@ -1386,7 +1385,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
