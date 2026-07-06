@@ -9,6 +9,7 @@ return {
         markdown = { 'markdownlint' },
         python = { 'pylint' },
         javascript = { 'ts-standard' },
+        rust = { 'clippy' },
       }
 
       local md = lint.linters.markdownlint
