@@ -257,11 +257,9 @@ vim.api.nvim_set_hl(0, 'markdownBold', { fg = 'cyan', bold = true })
 
 vim.api.nvim_set_hl(0, '@markup.italic', { fg = 'gold', italic = true })
 vim.api.nvim_set_hl(0, 'markdownItalic', { fg = 'gold', italic = true })
-<<<<<<< init.lua
+
 -- [[ Enable vim-default fold support for markdown files
 vim.g.markdown_folding = 1
-=======
->>>>>>> init_LOCAL_176619.lua
 
 -- [[ Enabling nvim linewrapping and basic text formatting for certain filetypes ]]
 
