@@ -236,7 +236,7 @@ vim.api.nvim_create_autocmd('FileType', {
   pattern = spellcheck_filetypes,
   callback = function()
     vim.opt_local.spell = true
-    vim.opt_local.spelllang = 'en_ca' -- spellcheck against Canadian dict
+    vim.opt_local.spelllang = 'en_ca' -- spellcheck against Canadian dictionary
     vim.opt_local.wrap = true
     vim.opt_local.linebreak = true
     vim.opt_local.breakindent = true
@@ -257,6 +257,11 @@ vim.api.nvim_set_hl(0, 'markdownBold', { fg = 'cyan', bold = true })
 
 vim.api.nvim_set_hl(0, '@markup.italic', { fg = 'gold', italic = true })
 vim.api.nvim_set_hl(0, 'markdownItalic', { fg = 'gold', italic = true })
+<<<<<<< init.lua
+-- [[ Enable vim-default fold support for markdown files
+vim.g.markdown_folding = 1
+=======
+>>>>>>> init_LOCAL_176619.lua
 
 -- [[ Enabling nvim linewrapping and basic text formatting for certain filetypes ]]
 
@@ -280,40 +285,38 @@ vim.api.nvim_set_hl(0, 'markdownItalic', { fg = 'gold', italic = true })
 --   desc = 'Enable text formatting, particularly linewrapping, for the define filetypes',
 -- })
 
--- Secret Handling in my neovim sessions
-local secret_cache = {}
-
---- Fetches a secret from the Freedesktop Secret Service (KeePassXC)
---- @param attribute_name string: The attribute name
---- @param attribute_value string: The attribute value
---- @return string|nil: The secret, or nil if not found
-local function get_secret_service(attribute_name, attribute_value)
-  local cache_key = attribute_name .. ':' .. attribute_value
-
-  -- 1. Check the cache first
-  if secret_cache[cache_key] then
-    return secret_cache[cache_key]
-  end
-
-  -- 2. Build the command
-  local cmd = { 'secret-tool', 'lookup', attribute_name, attribute_value }
-
-  -- 3. Run the command
-  local secret = vim.fn.system(cmd)
-
-  -- 4. Check for errors
-  if vim.v.shell_error ~= 0 then
-    vim.notify("Secret Service Error: Could not fetch '" .. attribute_value .. "'. Is KeePassXC unlocked?", vim.log.levels.ERROR)
-    return nil
-  end
-
-  -- 5. Clean, cache, and return
-  local trimmed_secret = secret:gsub('%s*$', '') -- Remove trailing newline
-  secret_cache[cache_key] = trimmed_secret
-  return trimmed_secret
-end
-
-get_secret_service('gemini-api-key-21-10-2025', 'key')
+-- -- Secret Handling in my neovim sessions
+-- local secret_cache = {}
+--
+-- --- Fetches a secret from the Freedesktop Secret Service (KeePassXC)
+-- --- @param attribute_name string: The attribute name
+-- --- @param attribute_value string: The attribute value
+-- --- @return string|nil: The secret, or nil if not found
+-- local function get_secret_service(attribute_name, attribute_value)
+--   local cache_key = attribute_name .. ':' .. attribute_value
+--
+--   -- 1. Check the cache first
+--   if secret_cache[cache_key] then
+--     return secret_cache[cache_key]
+--   end
+--
+--   -- 2. Build the command
+--   local cmd = { 'secret-tool', 'lookup', attribute_name, attribute_value }
+--
+--   -- 3. Run the command
+--   local secret = vim.fn.system(cmd)
+--
+--   -- 4. Check for errors
+--   if vim.v.shell_error ~= 0 then
+--     vim.notify("Secret Service Error: Could not fetch '" .. attribute_value .. "'. Is KeePassXC unlocked?", vim.log.levels.ERROR)
+--     return nil
+--   end
+--
+--   -- 5. Clean, cache, and return
+--   local trimmed_secret = secret:gsub('%s*$', '') -- Remove trailing newline
+--   secret_cache[cache_key] = trimmed_secret
+--   return trimmed_secret
+-- end
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -823,7 +826,7 @@ require('lazy').setup({
         -- and this installs the sicp library
         -- raco pkg install sicp
         racket_langserver = {},
-        -- rust_analyzer = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
 
         lua_ls = {
@@ -889,6 +892,8 @@ require('lazy').setup({
         python = { 'black' },
         html = { 'djlint' },
         htmldjango = { 'djlint' },
+        racket = { 'racketfmt' },
+        rust = { 'rustfmt' },
 
         -- Conform can also run multiple formatters sequentially
         --
@@ -1266,104 +1271,6 @@ require('lazy').setup({
       map('<leader>op', '<cmd>Obsidian dailies<CR>', '[P]ick a daily note')
       map('<leader>os', '<cmd>Obsidian quick_switch<CR>', '[S]earch in my vault')
       map('<leader>ot', '<cmd>Obsidian template<CR>', 'Insert a [T]emplate')
-    end,
-  },
-  {
-    'CopilotC-Nvim/CopilotChat.nvim',
-    version = '*',
-    event = 'VimEnter',
-    dependencies = {
-      { 'nvim-lua/plenary.nvim', branch = 'master' },
-    },
-    opts = {
-      window = {
-        layout = 'float',
-        border = 'shadow',
-      },
-      mappings = {
-        accept = nil,
-        complete = nil,
-        close = nil,
-        reset = nil,
-        submit_prompt = nil,
-        toggle_sticky = nil,
-        accept_diff = nil,
-        jump_to_diff = nil,
-        quickfix_diffs = nil,
-        yank_diff = nil,
-        show_diff = nil,
-        show_info = nil,
-        show_help = nil,
-      },
-    },
-
-    config = function()
-      local cpf = require 'CopilotChat'
-
-      local map = function(keys, func, desc, opts, mode)
-        mode = mode or 'n'
-
-        if not opts then
-          opts = {}
-        end
-
-        opts.desc = 'CopilotChat: ' .. desc
-
-        vim.keymap.set(mode, keys, func, opts)
-      end
-
-      local myToggle = function()
-        cpf.toggle(cpf.config)
-      end
-
-      map('<leader>cc', myToggle, 'Toggle [C]opilot chat')
-      map('<leader>cb', cpf.ask, 'Toggle [C]opilot chat') -- TODO: add the current buffer to the prompt
-      map('<leader>cb', cpf.ask, 'Toggle [C]opilot chat') -- TODO: add What is selected in visual mode to the prompt
-
-      -- Set it up to use Gemini
-      require('CopilotChat.config').providers.gemini = {
-        prepare_input = require('CopilotChat.config.providers').copilot.prepare_input,
-        prepare_output = require('CopilotChat.config.providers').copilot.prepare_output,
-
-        get_headers = function()
-          local api_key = get_secret_service('gemini-api-key-21-10-2025', 'key')
-
-          assert(api_key, 'Could not fetch gemini api key from secret service / keepassxc')
-
-          return {
-            Authorization = 'Bearer ' .. api_key,
-            ['Content-Type'] = 'application/json',
-          }
-        end,
-
-        get_models = function(headers)
-          local response, err = require('CopilotChat.utils').curl_get('https://generativelanguage.googleapis.com/v1beta/openai/models', {
-            headers = headers,
-            json_response = true,
-          })
-
-          if err then
-            error(err)
-          end
-
-          print(response)
-          print(response.body.data)
-
-          return vim.tbl_map(function(model)
-            local id = model.id:gsub('^models/', '')
-            return {
-              id = id,
-              name = id,
-              streaming = true,
-              tools = true,
-            }
-          end, response.body.data)
-        end,
-
-        get_url = function()
-          return 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
-        end,
-      }
     end,
   },
 
